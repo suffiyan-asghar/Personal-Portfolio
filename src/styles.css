@@ -356,11 +356,16 @@ a:hover {
   left: 0;
   bottom: 0;
   width: 100%;
-  /* 600 units of city plus 120 below the ground line (see Skyline.jsx). */
-  height: 45rem;
+  /* 600 units of city plus 120 below the ground line (see Skyline.jsx).
+     It grows with the window width (720/1440 = 50vw) so wide screens never
+     crop the sky, which used to slice through the moon and searchlights. */
+  height: max(45rem, 50vw);
   overflow: hidden;
   display: block;
   pointer-events: none;
+  /* The sky fades out at the top instead of ending in a hard line. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
 }
 
 /* Rooftop searchlights sweep slowly across the sky. */
@@ -407,21 +412,8 @@ a:hover {
   }
 }
 
-/* The lit city is only visible inside the searchlight. */
-.skyline-lit {
-  -webkit-mask-image: radial-gradient(circle 24rem at var(--cx, 50%) var(--cy, 45%), #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 100%);
-  mask-image: radial-gradient(circle 24rem at var(--cx, 50%) var(--cy, 45%), #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 100%);
-}
-
-.hero-pool {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle 26rem at var(--px, 50%) var(--py, 40%), color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
-}
-
 /* About 200px from transparent to the page background, so the hero runs into
-   About without a seam. */
+   the next section without a seam. */
 .hero-fade {
   position: absolute;
   left: 0;
@@ -434,7 +426,8 @@ a:hover {
 
 .hero-inner {
   position: relative;
-  padding-block: 8.5rem 31.5rem;
+  /* Keeps the city's rooftops 13.5rem up behind the buttons at any width. */
+  padding-block: 8.5rem max(31.5rem, calc(50vw - 13.5rem));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -490,22 +483,29 @@ a:hover {
   /* Room for descenders, which the clipped background would otherwise cut off. */
   padding-bottom: 0.14em;
   margin-bottom: -0.14em;
-  background: radial-gradient(circle 26rem at var(--mx, 50%) var(--my, 45%), #ffffff 0%, #f5f5f7 30%, #6e6e73 100%);
+  background: radial-gradient(circle 26rem at 50% 45%, #ffffff 0%, #f5f5f7 30%, #6e6e73 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
 }
 
-.hero-intro {
-  margin: 0;
-  max-width: 38rem;
-  font-size: clamp(1.25rem, 2vw, 1.625rem);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+.hero-about {
+  max-width: 44rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
   font-weight: 500;
   color: var(--muted);
-  text-wrap: balance;
+  scroll-margin-top: 6rem;
+}
+
+.hero-about p {
+  margin: 0;
+  text-wrap: pretty;
 }
 
 .hero-actions {
@@ -527,104 +527,6 @@ a:hover {
     width: 11rem;
     height: 11rem;
   }
-}
-
-/* ---------- About ---------- */
-
-.about {
-  padding-block: 6rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
-.about-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: 3rem 4rem;
-  align-items: center;
-}
-
-.about-grid.no-photos {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (max-width: 52rem) {
-  .about-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.about-photos {
-  display: grid;
-  gap: 1rem;
-  max-width: 28rem;
-  width: 100%;
-  justify-self: center;
-}
-
-.about-photos.count-2 {
-  grid-template-columns: 1fr 1fr;
-  align-items: start;
-}
-
-.about-photos.count-2 .about-photo-1 {
-  margin-top: 3rem;
-}
-
-.about-photo {
-  position: relative;
-  margin: 0;
-  aspect-ratio: 4 / 5;
-  border-radius: 1.5rem;
-  overflow: hidden;
-  background: var(--surface);
-  box-shadow: var(--edge);
-}
-
-.about-photo img,
-.about-photo .placeholder {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Yellow duotone on hover: a greyscale copy fades in under a yellow multiply
-   layer, so shadows stay black and highlights turn yellow. */
-.about-photo .duotone {
-  filter: grayscale(1) contrast(1.1);
-  opacity: 0;
-  transition: opacity var(--spring-time) var(--spring);
-}
-
-.duotone-tint {
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  mix-blend-mode: multiply;
-  opacity: 0;
-  transition: opacity var(--spring-time) var(--spring);
-}
-
-.about-photo:hover .duotone,
-.about-photo:hover .duotone-tint {
-  opacity: 1;
-}
-
-.about-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  font-size: 1.1875rem;
-  color: var(--text-2);
-}
-
-.about-body p {
-  margin: 0;
-  text-wrap: pretty;
 }
 
 /* ---------- Tiles (projects, certifications) ---------- */
@@ -1159,11 +1061,21 @@ img.logo-hover {
   min-height: 8.5rem;
 }
 
-.cert svg {
+.cert-marks {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   color: var(--accent);
 }
 
-.cert > span {
+/* Small DataCamp mark in the corner, in grey so the topic logo leads. */
+.cert-issuer {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.cert-name {
   margin-top: auto;
   font-size: 1.1875rem;
   font-weight: 600;

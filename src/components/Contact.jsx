@@ -94,7 +94,7 @@ export default function Contact() {
       />
       <div className="container contact-inner">
         <Reveal className="contact-copy">
-          <SectionHeading id="contact-title" index={5} label="Contact" titleClassName="contact-title">
+          <SectionHeading id="contact-title" index={4} label="Contact" titleClassName="contact-title">
             Send the signal.
           </SectionHeading>
           <p className="contact-lede">I'm open to software engineering and AI opportunities. Send a message or reach me directly.</p>

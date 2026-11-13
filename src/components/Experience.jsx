@@ -27,7 +27,7 @@ export default function Experience() {
 
   return (
     <section id="experience" className="container section" aria-labelledby="experience-title">
-      <SectionHeading id="experience-title" index={3} label="Experience">
+      <SectionHeading id="experience-title" index={2} label="Experience">
         Experience
       </SectionHeading>
       <div className="xp-list" ref={listRef}>

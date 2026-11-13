@@ -15,7 +15,7 @@ Open the address it prints (usually http://localhost:5173).
 
 ## Edit the content
 
-Everything you would want to change is in `src/data.js`: your intro, about text, projects, experience, skills and certifications.
+Everything you would want to change is in `src/data.js`: your about text, projects, experience, skills and certifications.
 
 Things to update before you publish:
 
@@ -39,16 +39,15 @@ Image paths in `src/data.js` are relative to `src/assets`. Drop a file at the pa
 | Project hover video | `project.video` (optional) | `src/assets/projects/<slug>-preview.mp4`, short and muted |
 | Experience logos | `experience.logo`, `experience.logoAlt` | `src/assets/logos/techmonkeys.svg`, `corrtec.svg`, `iba.svg` (optional; nothing shows until the file exists) |
 | Affiliation logos | `experience.affiliations` (list of `{ name, logo, logoAlt }`) | `src/assets/logos/gdg.svg` (optional; the row shows only once the logo exists) |
-| About photos | `about.photos` (one or two `{ src, alt }`, empty by default) | `src/assets/about/*.jpg`, portrait 4:5 |
 
 Other fields:
 
 - `project.slug`: short id used in file names and the detail view.
 - `project.details`: optional extra paragraphs shown only in the detail view.
 - `project.diagram`: set to `'rag'` to show the built-in RAG pipeline diagram in the detail view.
-- `about.paragraphs`: the About text (this used to be the whole `about` list).
+- `about`: the About paragraphs, shown in the hero under your name.
 - `skills[].items`: each item is `{ name, icon }`. `icon` is a key from `src/icons.jsx`; leave it out for no icon. To add an icon, find it on [simpleicons.org](https://simpleicons.org), import it in `src/icons.jsx` and add it to the `icons` map.
-- `certifications.items`: each item is `{ name, url }`. The card links to `url` in a new tab.
+- `certifications.items`: each item is `{ name, url, icon }`. The card links to `url` in a new tab and shows the `icon` (a key from `src/icons.jsx`), or an award badge without one.
 - `profile.portraitAlt`: alt text for the hero photo.
 
 Every image needs alt text; it lives next to the path in `src/data.js`. Use WebP for large screenshots where you can.
@@ -82,9 +81,8 @@ src/
   App.jsx              page layout
   components/
     Nav.jsx            floating nav with the active-section highlight
-    Hero.jsx           portrait, name and cursor searchlight
+    Hero.jsx           portrait, name, about text and the city
     Skyline.jsx        the generated night city
-    About.jsx
     Projects.jsx       project cards with screenshot spotlight
     ProjectDetail.jsx  full-screen project view and gallery
     RagDiagram.jsx     the RAG pipeline diagram
@@ -104,7 +102,6 @@ src/
 - The experience timeline draws itself as you scroll.
 - A thin yellow bar at the top shows how far down the page you are.
 - The hero ends in a night skyline in three layers, with lit window grids, a moon and two rooftop searchlights that sweep the sky. A few windows flicker.
-- A searchlight follows the cursor across the hero, lighting the name and the buildings under it.
 - The skyline layers drift at different speeds as you scroll.
 - Sections lift into place the first time they scroll into view.
 - Buttons and cards respond the moment they are pressed; cards carry a glow that follows the cursor.

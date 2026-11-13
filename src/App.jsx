@@ -1,7 +1,6 @@
 import { MotionConfig, motion, useScroll, useSpring } from 'motion/react';
 import Nav from './components/Nav.jsx';
 import Hero from './components/Hero.jsx';
-import About from './components/About.jsx';
 import Projects from './components/Projects.jsx';
 import Experience from './components/Experience.jsx';
 import Skills from './components/Skills.jsx';
@@ -20,14 +19,13 @@ export default function App() {
     // reducedMotion="user" swaps movement for simple fades when the visitor
     // has asked their device to reduce motion.
     <MotionConfig reducedMotion="user">
-      <a className="skip-link" href="#about">
+      <a className="skip-link" href="#main">
         Skip to content
       </a>
       <ScrollProgress />
       <Nav />
       <Hero />
-      <main>
-        <About />
+      <main id="main">
         <Projects />
         <Experience />
         <Skills />

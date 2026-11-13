@@ -1,5 +1,5 @@
 import { certifications, skills } from '../data.js';
-import { TechIcon } from '../icons.jsx';
+import { hasIcon, TechIcon } from '../icons.jsx';
 import { Reveal, SectionHeading, Tile } from './motion.jsx';
 
 // Each row holds three copies of its list so the loop never shows a gap.
@@ -36,7 +36,7 @@ function Award() {
 export default function Skills() {
   return (
     <section id="skills" className="container section" aria-labelledby="skills-title">
-      <SectionHeading id="skills-title" index={4} label="Skills">
+      <SectionHeading id="skills-title" index={3} label="Skills">
         Skills
       </SectionHeading>
 
@@ -55,8 +55,13 @@ export default function Skills() {
           {certifications.items.map((item, index) => (
             <li key={item.name} className="cert-item">
               <Tile as="a" className="cert" delay={index * 0.06} href={item.url} target="_blank" rel="noreferrer">
-                <Award />
-                <span>
+                <span className="cert-marks">
+                  {hasIcon(item.icon) ? <TechIcon name={item.icon} size={28} /> : <Award />}
+                  <span className="cert-issuer" title={`Issued by ${certifications.issuer}`}>
+                    <TechIcon name="datacamp" size={18} />
+                  </span>
+                </span>
+                <span className="cert-name">
                   {item.name}
                   <span className="visually-hidden"> certificate (opens in a new tab)</span>
                 </span>

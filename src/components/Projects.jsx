@@ -167,7 +167,7 @@ export default function Projects() {
 
   return (
     <section id="work" className="container section" aria-labelledby="work-title">
-      <SectionHeading id="work-title" index={2} label="Projects">
+      <SectionHeading id="work-title" index={1} label="Projects">
         Projects
       </SectionHeading>
       <div className="projects-grid">

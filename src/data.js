@@ -8,8 +8,6 @@ export const profile = {
   name: 'Suffiyan Asghar Ali',
   shortName: 'Suffiyan',
   role: 'Development & AI',
-  intro:
-    'Computer Science student at IBA Karachi, building AI applications and full-stack web products.',
   email: 'suffiyan.asghar10@gmail.com',
   github: 'https://github.com/suffiyan-asghar',
   githubHandle: 'suffiyan-asghar',
@@ -20,15 +18,11 @@ export const profile = {
   portraitAlt: 'Portrait of Suffiyan Asghar Ali',
 };
 
-export const about = {
-  paragraphs: [
-    'I am a Computer Science student at the Institute of Business Administration, Karachi. My work focuses on applied AI, particularly retrieval-augmented generation and machine learning, alongside full-stack web development.',
-    'During my internships I have built LLM-powered features, API endpoints and web applications for clients, working with Python, Next.js, React and Spring Boot. I am comfortable working in Agile teams and taking a project from requirements to delivery.',
-  ],
-  // Optional: one or two photos shown beside the text, as { src, alt }.
-  // Leave empty for text only.
-  photos: [],
-};
+// Shown in the hero, under your name.
+export const about = [
+  'I am a Computer Science student at the Institute of Business Administration, Karachi. My work focuses on applied AI, particularly retrieval-augmented generation and machine learning, alongside full-stack web development.',
+  'During my internships I have built LLM-powered features, API endpoints and web applications for clients, working with Python, Next.js, React and Spring Boot. I am comfortable working in Agile teams and taking a project from requirements to delivery.',
+];
 
 // `repo` and `live` are optional. Replace the placeholder repo links with the
 // real repository for each project, and add a `live` URL to show a demo link.
@@ -144,7 +138,7 @@ export const skills = [
     items: [
       { name: 'Python', icon: 'python' },
       { name: 'C++', icon: 'cplusplus' },
-      { name: 'SQL' },
+      { name: 'SQL', icon: 'sql' },
       { name: 'JavaScript', icon: 'javascript' },
       { name: 'React.js', icon: 'react' },
       { name: 'Next.js', icon: 'nextdotjs' },
@@ -170,14 +164,15 @@ export const skills = [
 ];
 
 // `url` links to the certificate and opens in a new tab. Replace each '#'.
+// `icon` is a key from src/icons.jsx; without one the card shows an award badge.
 export const certifications = {
   issuer: 'DataCamp',
   items: [
-    { name: 'Git Fundamentals', url: '#' },
-    { name: 'SQL', url: '#' },
-    { name: 'Supervised Learning', url: '#' },
-    { name: 'MLflow', url: '#' },
-    { name: 'Scikit-learn', url: '#' },
+    { name: 'Git Fundamentals', url: '#', icon: 'git' },
+    { name: 'SQL', url: '#', icon: 'sql' },
+    { name: 'Supervised Learning', url: '#', icon: 'supervised' },
+    { name: 'MLflow', url: '#', icon: 'mlflow' },
+    { name: 'Scikit-learn', url: '#', icon: 'scikitlearn' },
   ],
 };
 
