@@ -5,7 +5,12 @@ import { motion } from 'motion/react';
 // Each building gets a real window grid; only some windows are lit.
 
 const W = 1440;
-const H = 600; // viewBox height; the ground sits at the bottom edge
+const H = 600; // the ground line
+// Every building continues this far below the ground line, so layers that
+// drift during scroll never open a gap. The hero's bottom fade covers it.
+const EXT = 120;
+const VH = H + EXT; // full viewBox height
+const BATCHES = 14; // lit windows switch on in this many steps on load
 
 function seeded(seed) {
   let s = seed >>> 0;
@@ -20,7 +25,7 @@ const tri = (x1, y1, x2, y2, x3, y3) => `M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2
 
 function building(r, x, w, h, type) {
   const top = H - h;
-  const parts = [rect(x, top, w, h)];
+  const parts = [rect(x, top, w, h + EXT)];
   let roof = top;
 
   if (type === 'stepped') {
@@ -110,12 +115,20 @@ function layer(seed, cfg, landmarks = []) {
   }
   const { winW = 0, winH = 0 } = cfg.win || {};
   const toPath = (pts) => pts.map(([px, py]) => rect(px, py, winW, winH)).join('');
+  // Spread lit windows over batches with a fixed hash, so the city's layout
+  // (drawn from the seeded generator above) stays exactly the same.
+  const batched = (pts) => {
+    const groups = Array.from({ length: BATCHES }, () => []);
+    // Window x can be negative (the first building starts off-screen), so wrap the index.
+    pts.forEach((pt, i) => groups[(((i * 7 + Math.floor(pt[0] / 37)) % BATCHES) + BATCHES) % BATCHES].push(pt));
+    return groups.map(toPath);
+  };
   // A handful of lit windows flicker on their own.
   const flicker = lit.filter((_, i) => i % 23 === 7).slice(0, 10);
   return {
     shape,
-    lit: toPath(lit),
-    warm: toPath(warm),
+    lit: batched(lit),
+    warm: batched(warm),
     dark: toPath(dark),
     all: toPath([...lit, ...warm, ...dark]),
     flicker: flicker.map(([px, py]) => ({ x: px, y: py, w: winW, h: winH })),
@@ -161,6 +174,15 @@ const COLORS = {
   lit: { far: '#2A2D38', mid: '#22242D', near: '#1B1C23', farWin: '#3A3D4A', midWin: '#363844', nearWin: '#33353F' },
 };
 
+const winDelay = (i) => 0.5 + i * 0.11;
+
+// One path per batch; each batch fades on a beat after the one before.
+function Windows({ paths, fill, fillOpacity }) {
+  return paths.map((d, i) =>
+    d ? <path key={i} className="win-on" d={d} fill={fill} fillOpacity={fillOpacity} style={{ animationDelay: `${winDelay(i)}s` }} /> : null,
+  );
+}
+
 export default function Skyline({ lit = false, farY, midY, innerRef }) {
   const c = lit ? COLORS.lit : COLORS.dark;
   return (
@@ -168,7 +190,7 @@ export default function Skyline({ lit = false, farY, midY, innerRef }) {
       ref={innerRef}
       className={`skyline ${lit ? 'skyline-lit' : ''}`}
       aria-hidden="true"
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={`0 0 ${W} ${VH}`}
       preserveAspectRatio="xMidYMax slice"
     >
       {!lit && (
@@ -193,7 +215,8 @@ export default function Skyline({ lit = false, farY, midY, innerRef }) {
           </radialGradient>
           <linearGradient id="ground-fade" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#000" stopOpacity="0" />
-            <stop offset="1" stopColor="#000" stopOpacity="1" />
+            {/* Fully dark at the ground line, as before; the part below it stays dark. */}
+            <stop offset={70 / (70 + EXT)} stopColor="#000" stopOpacity="1" />
           </linearGradient>
         </defs>
       )}
@@ -208,17 +231,17 @@ export default function Skyline({ lit = false, farY, midY, innerRef }) {
       <motion.g style={{ y: farY }}>
         <path d={FAR.shape} fill={c.far} />
         <path d={lit ? FAR.all : FAR.dark} fill={c.farWin} />
-        {!lit && <path d={FAR.lit} fill="var(--accent)" opacity="0.55" />}
-        {!lit && <path d={FAR.warm} fill="#FFE9A8" opacity="0.45" />}
+        {!lit && <Windows paths={FAR.lit} fill="var(--accent)" fillOpacity={0.55} />}
+        {!lit && <Windows paths={FAR.warm} fill="#FFE9A8" fillOpacity={0.45} />}
       </motion.g>
 
-      {!lit && <rect x="0" y={H - 330} width={W} height="330" fill="url(#haze)" />}
+      {!lit && <rect x="0" y={H - 330} width={W} height={330 + EXT} fill="url(#haze)" />}
 
       <motion.g style={{ y: midY }}>
         <path d={MID.shape} fill={c.mid} />
         <path d={MID.dark} fill={c.midWin} />
-        <path d={MID.lit} fill="var(--accent)" opacity={lit ? 1 : 0.8} />
-        <path d={MID.warm} fill="#FFE9A8" opacity={lit ? 1 : 0.7} />
+        <Windows paths={MID.lit} fill="var(--accent)" fillOpacity={lit ? 1 : 0.8} />
+        <Windows paths={MID.warm} fill="#FFE9A8" fillOpacity={lit ? 1 : 0.7} />
       </motion.g>
 
       {!lit &&
@@ -234,13 +257,17 @@ export default function Skyline({ lit = false, farY, midY, innerRef }) {
 
       <path d={NEAR.shape} fill={c.near} />
       <path d={NEAR.dark} fill={c.nearWin} />
-      <path d={NEAR.lit} fill="var(--accent)" />
-      <path d={NEAR.warm} fill="#FFE9A8" opacity="0.9" />
-      {!lit &&
-        NEAR.flicker.map((f, i) => (
-          <rect key={i} className="flicker" x={f.x} y={f.y} width={f.w} height={f.h} fill="var(--accent)" style={{ animationDelay: `${-i * 1.7}s`, animationDuration: `${5 + (i % 4) * 1.5}s` }} />
-        ))}
-      <rect x="0" y={H - 70} width={W} height="70" fill="url(#ground-fade)" opacity={lit ? 0 : 1} />
+      <Windows paths={NEAR.lit} fill="var(--accent)" fillOpacity={1} />
+      <Windows paths={NEAR.warm} fill="#FFE9A8" fillOpacity={0.9} />
+      {!lit && (
+        // Flickering starts once the city has finished switching on.
+        <g className="win-on" style={{ animationDelay: `${winDelay(BATCHES)}s` }}>
+          {NEAR.flicker.map((f, i) => (
+            <rect key={i} className="flicker" x={f.x} y={f.y} width={f.w} height={f.h} fill="var(--accent)" style={{ animationDelay: `${-i * 1.7}s`, animationDuration: `${5 + (i % 4) * 1.5}s` }} />
+          ))}
+        </g>
+      )}
+      {!lit && <rect x="0" y={H - 70} width={W} height={70 + EXT} fill="url(#ground-fade)" />}
       {!lit && BEAMS.map((b) => <rect key={`lamp-${b.x}`} x={b.x - 7} y={b.y - 7} width="14" height="7" rx="2" fill="#2A2B31" />)}
     </svg>
   );

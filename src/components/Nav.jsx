@@ -56,7 +56,7 @@ export default function Nav() {
             <span>{link.label}</span>
           </a>
         ))}
-        <Pressable className="nav-cta" href="#contact">
+        <Pressable className="nav-cta" href="#contact" magnetic>
           Contact
         </Pressable>
       </motion.nav>

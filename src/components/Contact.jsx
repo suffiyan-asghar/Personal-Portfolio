@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { profile } from '../data.js';
-import { Pressable, Reveal, SPRING, SPRING_SNAPPY } from './motion.jsx';
+import { Pressable, Reveal, SectionHeading, SPRING, SPRING_SNAPPY } from './motion.jsx';
 
 const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -94,9 +94,9 @@ export default function Contact() {
       />
       <div className="container contact-inner">
         <Reveal className="contact-copy">
-          <h2 id="contact-title" className="contact-title">
+          <SectionHeading id="contact-title" index={5} label="Contact" titleClassName="contact-title">
             Send the signal.
-          </h2>
+          </SectionHeading>
           <p className="contact-lede">I'm open to software engineering and AI opportunities. Send a message or reach me directly.</p>
           <dl className="contact-list">
             <div>
@@ -135,7 +135,7 @@ export default function Contact() {
           <input className="honeypot" type="checkbox" name="botcheck" tabIndex={-1} autoComplete="off" aria-hidden="true" />
 
           <div className="form-foot">
-            <Pressable as="button" type="submit" className="btn btn-accent" disabled={sending}>
+            <Pressable as="button" type="submit" className="btn btn-accent" disabled={sending} magnetic>
               {sending ? 'Sending…' : 'Send message'}
             </Pressable>
             <div role="status" aria-live="polite">

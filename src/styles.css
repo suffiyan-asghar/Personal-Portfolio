@@ -7,6 +7,13 @@
   --muted: #a1a1a6;
   --hairline: rgba(255, 255, 255, 0.12);
   --edge: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --accent-soft: rgba(255, 214, 10, 0.14);
+  --accent-glow: rgba(255, 214, 10, 0.35);
+  /* A critically damped spring (no overshoot) as a CSS easing, for hover
+     transitions handled in CSS. Transitions reverse from wherever they are,
+     so they stay interruptible. */
+  --spring: linear(0, 0.191, 0.475, 0.692, 0.829, 0.908, 0.952, 0.976, 0.988, 0.994, 1);
+  --spring-time: 0.5s;
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, system-ui, sans-serif;
 }
 
@@ -44,6 +51,36 @@ a:hover {
   border-radius: 0.5rem;
 }
 
+::selection {
+  background: var(--accent);
+  color: #000;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Fills as the page scrolls. */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 40;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
 .container {
   max-width: 75rem;
   margin: 0 auto;
@@ -55,6 +92,32 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 3rem;
+}
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Yellow text is kept to 14px and up, semibold, on black. */
+.eyebrow {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.section-rule {
+  display: block;
+  width: 3rem;
+  height: 2px;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: 0 50%;
 }
 
 .section-title {
@@ -137,7 +200,8 @@ a:hover {
 }
 
 .nav-link[aria-current='true'] {
-  color: #ffffff;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .nav-link span {
@@ -149,11 +213,12 @@ a:hover {
   position: absolute;
   inset: 0.45rem 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px rgba(255, 214, 10, 0.22);
 }
 
 .nav-cta {
-  background: var(--text);
+  background: var(--accent);
   color: #000 !important;
   border-radius: 999px;
   padding: 0 1rem;
@@ -188,7 +253,7 @@ a:hover {
 }
 
 .btn-primary {
-  background: var(--text);
+  background: var(--accent);
   color: #000;
   font-weight: 600;
   padding-inline: 1.5rem;
@@ -216,13 +281,26 @@ a:hover {
 }
 
 .btn-ghost {
+  position: relative;
   border-color: rgba(255, 255, 255, 0.28);
-  transition: border-color 0.2s ease-out, background-color 0.2s ease-out;
 }
 
-.btn-ghost:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.06);
+/* The yellow border fades in on a layer above the grey one (opacity only). */
+.btn-ghost::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid var(--accent);
+  background: rgba(255, 214, 10, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--spring-time) var(--spring);
+}
+
+.btn-ghost:hover::after,
+.btn-ghost:focus-visible::after {
+  opacity: 1;
 }
 
 .text-link {
@@ -231,7 +309,7 @@ a:hover {
   gap: 0.35rem;
   min-height: 2.75rem;
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -241,7 +319,7 @@ a:hover {
 }
 
 .text-link svg {
-  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+  transition: transform var(--spring-time) var(--spring);
 }
 
 .text-link:hover svg {
@@ -253,6 +331,13 @@ a:hover {
 .hero {
   position: relative;
   overflow: hidden;
+}
+
+.hero-city {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-origin: 50% 100%;
 }
 
 .hero-glow {
@@ -271,7 +356,9 @@ a:hover {
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 37.5rem;
+  /* 600 units of city plus 120 below the ground line (see Skyline.jsx). */
+  height: 45rem;
+  overflow: hidden;
   display: block;
   pointer-events: none;
 }
@@ -292,6 +379,20 @@ a:hover {
 
 .flicker {
   animation: flicker 6s steps(1) infinite;
+}
+
+/* Lit windows switch on in batches as the page loads. */
+.win-on {
+  animation: win-on 0.5s ease-out both;
+}
+
+@keyframes win-on {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes flicker {
@@ -319,9 +420,21 @@ a:hover {
   background: radial-gradient(circle 26rem at var(--px, 50%) var(--py, 40%), color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
 }
 
+/* About 200px from transparent to the page background, so the hero runs into
+   About without a seam. */
+.hero-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12.5rem;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+}
+
 .hero-inner {
   position: relative;
-  padding-block: 8.5rem 24rem;
+  padding-block: 8.5rem 31.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -330,20 +443,34 @@ a:hover {
 }
 
 .portrait {
+  position: relative;
   width: 13rem;
   height: 13rem;
   border-radius: 50%;
-  overflow: hidden;
   margin-bottom: -1.5rem;
-  -webkit-mask-image: linear-gradient(to bottom, #000 48%, transparent 98%);
-  mask-image: linear-gradient(to bottom, #000 48%, transparent 98%);
+  /* Thin yellow ring with a soft glow. It sits outside the faded photo, so
+     the ring stays whole. */
+  box-shadow: 0 0 0 1.5px var(--accent), 0 0 28px 2px var(--accent-glow);
 }
 
+.portrait-photo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+}
+
+/* The photo is 3:4 with the face slightly above centre and right of middle.
+   Scaled to 125% and shifted so the face sits in the middle of the circle. */
 .portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 30%;
+  position: absolute;
+  width: 125%;
+  max-width: none;
+  height: auto;
+  left: -14%;
+  top: -3%;
   display: block;
 }
 
@@ -391,10 +518,10 @@ a:hover {
 
 @media (max-width: 44rem) {
   .hero-inner {
-    padding-block: 7rem 17rem;
+    padding-block: 7rem 22rem;
   }
   .skyline {
-    height: 26rem;
+    height: 31rem;
   }
   .portrait {
     width: 11rem;
@@ -405,10 +532,86 @@ a:hover {
 /* ---------- About ---------- */
 
 .about {
-  padding-block: 8rem 2rem;
+  padding-block: 6rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.about-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
-  gap: 2rem 4rem;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 3rem 4rem;
+  align-items: center;
+}
+
+.about-grid.no-photos {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 52rem) {
+  .about-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.about-photos {
+  display: grid;
+  gap: 1rem;
+  max-width: 28rem;
+  width: 100%;
+  justify-self: center;
+}
+
+.about-photos.count-2 {
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
+.about-photos.count-2 .about-photo-1 {
+  margin-top: 3rem;
+}
+
+.about-photo {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--edge);
+}
+
+.about-photo img,
+.about-photo .placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Yellow duotone on hover: a greyscale copy fades in under a yellow multiply
+   layer, so shadows stay black and highlights turn yellow. */
+.about-photo .duotone {
+  filter: grayscale(1) contrast(1.1);
+  opacity: 0;
+  transition: opacity var(--spring-time) var(--spring);
+}
+
+.duotone-tint {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity var(--spring-time) var(--spring);
+}
+
+.about-photo:hover .duotone,
+.about-photo:hover .duotone-tint {
+  opacity: 1;
 }
 
 .about-body {
@@ -448,6 +651,10 @@ a:hover {
   opacity: 1;
 }
 
+.project::before {
+  background: radial-gradient(circle 24rem at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%);
+}
+
 .tile > * {
   position: relative;
 }
@@ -458,12 +665,122 @@ a:hover {
   gap: 1.25rem;
 }
 
+.project-cell {
+  display: flex;
+}
+
 .project {
-  padding: 2.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+/* A yellow edge that grows along the top on hover. */
+.project::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 3;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform var(--spring-time) var(--spring);
+  pointer-events: none;
+}
+
+.project:hover::after,
+.project:focus-within::after {
+  transform: scaleX(1);
+}
+
+.project-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #0d0d0f;
+}
+
+.project-media img,
+.project-video,
+.project-media .placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.project-video {
+  opacity: 0;
+}
+
+.media-shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+/* The same shade with a soft circular hole at the cursor. */
+.media-spot {
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(circle 9rem at var(--sx, 50%) var(--sy, 50%), transparent 0%, transparent 35%, #000 100%);
+  mask-image: radial-gradient(circle 9rem at var(--sx, 50%) var(--sy, 50%), transparent 0%, transparent 35%, #000 100%);
+}
+
+/* No hover on touch screens, so show the screenshot at full brightness. */
+@media (hover: none) {
+  .media-shade {
+    display: none;
+  }
+}
+
+.project .project-body {
+  /* Static, so the stretched button below covers the whole card. */
+  position: static;
+  flex: 1;
+  padding: 2rem 2.5rem 2.25rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  min-height: 24rem;
+}
+
+/* Positioned so the text paints above the cursor glow. The title stays static
+   so its button can stretch over the card. */
+.project-body > :not(.project-title) {
+  position: relative;
+}
+
+.project-open {
+  all: unset;
+  cursor: pointer;
+}
+
+.project-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.project-open:focus-visible {
+  outline: none;
+}
+
+.project:has(.project-open:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.project-links a {
+  position: relative;
+  z-index: 3;
 }
 
 .project-category {
@@ -471,7 +788,7 @@ a:hover {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--muted);
+  color: var(--accent);
 }
 
 .project-title {
@@ -522,12 +839,37 @@ a:hover {
 /* ---------- Experience ---------- */
 
 .xp-list {
+  position: relative;
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid var(--hairline);
+  padding-left: 2.5rem;
+}
+
+/* The timeline: a faint rail, and a yellow line that draws over it on scroll. */
+.xp-rail,
+.xp-line {
+  position: absolute;
+  left: 0.5rem;
+  /* From the first dot's centre (padding 2.25rem + half the 2.75rem logo). */
+  top: 3.625rem;
+  bottom: 2.25rem;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 2px;
+}
+
+.xp-rail {
+  background: var(--hairline);
+}
+
+.xp-line {
+  background: var(--accent);
+  transform-origin: 50% 0;
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .xp {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
   gap: 1rem 3rem;
@@ -535,8 +877,102 @@ a:hover {
   border-top: 1px solid var(--hairline);
 }
 
+.xp-list > .xp:first-of-type {
+  border-top: 0;
+}
+
+.xp-dot {
+  position: absolute;
+  left: -2.5rem;
+  top: 3.125rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px var(--bg), 0 0 14px var(--accent-glow);
+}
+
+.xp-title {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  /* Same height with or without a logo, so the timeline dot lines up. */
+  min-height: 2.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Logos: greyscale by default; a white copy fades in on hover. */
+.logo {
+  position: relative;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.logo-sm {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+}
+
+.logo > * {
+  position: absolute;
+  inset: 0.375rem;
+  width: calc(100% - 0.75rem);
+  height: calc(100% - 0.75rem);
+  object-fit: contain;
+  transition: opacity var(--spring-time) var(--spring);
+}
+
+.logo-sm > * {
+  inset: 0.25rem;
+  width: calc(100% - 0.5rem);
+  height: calc(100% - 0.5rem);
+}
+
+img.logo-base {
+  filter: grayscale(1);
+  opacity: 0.65;
+}
+
+img.logo-hover {
+  filter: grayscale(1) brightness(0) invert(1);
+  opacity: 0;
+}
+
+.xp:hover .xp-title .logo-base,
+.xp-affiliations li:hover .logo-base {
+  opacity: 0;
+}
+
+.xp:hover .xp-title .logo-hover,
+.xp-affiliations li:hover .logo-hover {
+  opacity: 1;
+}
+
+.xp-affiliations {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.xp-affiliations li {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
 .xp-org {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -604,7 +1040,11 @@ a:hover {
 }
 
 .track li {
+  position: relative;
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   background: var(--surface);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-radius: 999px;
@@ -613,6 +1053,29 @@ a:hover {
   font-weight: 600;
   letter-spacing: -0.015em;
   white-space: nowrap;
+}
+
+.track li::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--accent);
+  opacity: 0;
+  transition: opacity var(--spring-time) var(--spring);
+  pointer-events: none;
+}
+
+.track li:hover {
+  color: var(--accent);
+}
+
+.track li:hover::after {
+  opacity: 1;
+}
+
+.tech-icon {
+  flex: none;
 }
 
 /* The track holds three copies of the list; one copy plus one gap is a full loop. */
@@ -662,7 +1125,32 @@ a:hover {
   gap: 1rem;
 }
 
+.cert-item {
+  position: relative;
+  display: flex;
+}
+
+/* Yellow glow on hover, on a layer outside the card's clipped edge. */
+.cert-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 0 1px rgba(255, 214, 10, 0.55), 0 0 32px var(--accent-glow);
+  opacity: 0;
+  transition: opacity var(--spring-time) var(--spring);
+  pointer-events: none;
+}
+
+.cert-item:hover::before,
+.cert-item:focus-within::before {
+  opacity: 1;
+}
+
 .cert {
+  flex: 1;
+  color: var(--text);
+  text-decoration: none;
   border-radius: 1.5rem;
   padding: 1.5rem;
   display: flex;
@@ -675,7 +1163,7 @@ a:hover {
   color: var(--accent);
 }
 
-.cert span {
+.cert > span {
   margin-top: auto;
   font-size: 1.1875rem;
   font-weight: 600;
@@ -846,6 +1334,353 @@ textarea.field {
   opacity: 0;
 }
 
+/* ---------- Placeholders (files not added yet) ---------- */
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: #6e6e73;
+  background:
+    linear-gradient(to bottom, transparent 55%, rgba(255, 214, 10, 0.05)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 2.5rem),
+    #111113;
+  text-align: center;
+}
+
+.placeholder code {
+  font-size: 0.75rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Icon buttons ---------- */
+
+.icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.09);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--accent);
+  opacity: 0;
+  transition: opacity var(--spring-time) var(--spring);
+}
+
+.icon-btn:hover::after {
+  opacity: 1;
+}
+
+.icon-btn:focus-visible {
+  border-radius: 50%;
+}
+
+/* ---------- Project detail overlay ---------- */
+
+.detail-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.detail-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.74);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.detail-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.detail-panel {
+  position: relative;
+  width: min(64rem, 100%);
+  height: 100%;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--edge), 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.detail-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+}
+
+.detail-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2.75rem 2.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.detail-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-right: 3.5rem;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 2rem 3rem;
+}
+
+.detail-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 1.125rem;
+  color: var(--text-2);
+}
+
+.detail-copy p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.detail-label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.detail-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 44rem) {
+  .detail-frame {
+    padding: 0.5rem;
+  }
+  .detail-scroll {
+    padding: 2rem 1.25rem 2.5rem;
+  }
+  .detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- Gallery ---------- */
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gallery-stage {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #0d0d0f;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  touch-action: pan-y;
+}
+
+.gallery-slide {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+
+.gallery-slide:active {
+  cursor: grabbing;
+}
+
+.gallery-slide img,
+.gallery-slide .placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+
+.gallery-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.gallery-dots {
+  display: flex;
+}
+
+.gallery-dot {
+  width: 1.75rem;
+  height: 2.75rem;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.gallery-dot::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.gallery-dot[aria-current='true']::before {
+  background: var(--accent);
+}
+
+/* ---------- RAG pipeline diagram ---------- */
+
+.rag {
+  margin: 0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-radius: 1.25rem;
+  background: #0d0d0f;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.rag-caption {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.rag-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.rag-tall {
+  display: none;
+}
+
+@media (max-width: 40rem) {
+  .rag-wide {
+    display: none;
+  }
+  .rag-tall {
+    display: block;
+    max-width: 22rem;
+    margin-inline: auto;
+  }
+}
+
+.rag-edge {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1.5;
+}
+
+.rag-node rect {
+  fill: #1c1c1e;
+  stroke: rgba(255, 255, 255, 0.18);
+}
+
+.rag-node text {
+  fill: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rag-node.is-accent rect {
+  fill: var(--accent);
+  stroke: none;
+}
+
+.rag-node.is-accent text {
+  fill: #000;
+}
+
+.rag-pulse {
+  opacity: 0;
+  animation: rag-pulse 4s linear infinite;
+}
+
+.rag-pulse-core {
+  fill: var(--accent);
+}
+
+.rag-pulse-halo {
+  fill: var(--accent);
+  opacity: 0.25;
+}
+
+/* Each pulse moves during the first fifth of the cycle, then waits while the
+   later stages take their turn. */
+@keyframes rag-pulse {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  16% {
+    opacity: 1;
+  }
+  20%,
+  100% {
+    transform: translate(var(--dx), var(--dy));
+    opacity: 0;
+  }
+}
+
 /* ---------- Footer ---------- */
 
 .footer {
@@ -870,8 +1705,17 @@ textarea.field {
     scroll-behavior: auto;
   }
   .beam,
-  .flicker {
+  .flicker,
+  .rag-pulse {
     animation: none;
+  }
+  .rag-pulse {
+    display: none;
+  }
+  /* Windows simply fade on together. */
+  .win-on {
+    animation-delay: 0s !important;
+    animation-duration: 0.6s;
   }
   .track {
     animation: none;
@@ -885,7 +1729,8 @@ textarea.field {
     -webkit-mask-image: none;
     mask-image: none;
   }
-  .text-link svg {
+  .text-link svg,
+  .project::after {
     transition: none;
   }
 }

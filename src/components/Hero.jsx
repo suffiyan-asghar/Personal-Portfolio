@@ -1,7 +1,7 @@
 import { useRef } from 'react';
-import { motion, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react';
+import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react';
 import { profile } from '../data.js';
-import portrait from '../assets/portrait.jpg';
+import portrait from '../assets/portrait-2.jpg';
 import { Pressable, SPRING } from './motion.jsx';
 import Skyline from './Skyline.jsx';
 
@@ -24,6 +24,18 @@ export default function Hero() {
   // can drive all three light effects.
   const offsets = useRef({ name: [0, 0], city: [0, 0] });
 
+  // Progress runs from 0 (hero at the top) to 1 (hero has left the screen).
+  // The city fades and eases forward as it goes; distant buildings drift more
+  // than near ones. Every layer extends below the ground line, so the drift
+  // never opens a gap. Reduced motion keeps only the fade.
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const cityOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const cityScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [1, 1.06]);
+  const farY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, 90]);
+  const midY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, 40]);
+  const glowY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, 140]);
+
   // The searchlight follows the pointer through a spring, so it glides.
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -38,10 +50,13 @@ export default function Hero() {
     hero.style.setProperty('--px', `${px}px`);
     hero.style.setProperty('--py', `${py}px`);
     const { name, city } = offsets.current;
+    // The city layer may be scaled as the hero scrolls away; the mask works in
+    // its unscaled coordinates.
+    const k = cityScale.get() || 1;
     nameRef.current?.style.setProperty('--mx', `${px - name[0]}px`);
     nameRef.current?.style.setProperty('--my', `${py - name[1]}px`);
-    cityRef.current?.style.setProperty('--cx', `${px - city[0]}px`);
-    cityRef.current?.style.setProperty('--cy', `${py - city[1]}px`);
+    cityRef.current?.style.setProperty('--cx', `${(px - city[0]) / k}px`);
+    cityRef.current?.style.setProperty('--cy', `${(py - city[1]) / k}px`);
   };
 
   useMotionValueEvent(lightX, 'change', paint);
@@ -74,22 +89,22 @@ export default function Hero() {
     }
   };
 
-  // Distant buildings drift more than near ones as the page scrolls.
-  const { scrollY } = useScroll();
-  const farY = useTransform(scrollY, [0, 900], [0, 70]);
-  const midY = useTransform(scrollY, [0, 900], [0, 30]);
-  const glowY = useTransform(scrollY, [0, 900], [0, 120]);
 
   return (
     <header id="top" className="hero" ref={heroRef} onPointerMove={onPointerMove}>
-      <motion.div className="hero-glow" aria-hidden="true" style={{ y: glowY }} />
-      <Skyline farY={farY} midY={midY} />
-      <Skyline lit farY={farY} midY={midY} innerRef={cityRef} />
+      <motion.div className="hero-city" aria-hidden="true" style={{ opacity: cityOpacity, scale: cityScale }}>
+        <motion.div className="hero-glow" style={{ y: glowY }} />
+        <Skyline farY={farY} midY={midY} />
+        <Skyline lit farY={farY} midY={midY} innerRef={cityRef} />
+      </motion.div>
       <div className="hero-pool" aria-hidden="true" />
+      <div className="hero-fade" aria-hidden="true" />
 
       <motion.div className="container hero-inner" variants={container} initial="hidden" animate="show">
         <motion.div className="portrait" variants={item}>
-          <img src={portrait} alt={`Portrait of ${profile.name}`} width="800" height="800" />
+          <div className="portrait-photo">
+            <img src={portrait} alt={profile.portraitAlt} width="960" height="1280" fetchPriority="high" />
+          </div>
         </motion.div>
         <motion.p className="hero-role" variants={item}>
           {profile.role}
@@ -101,19 +116,19 @@ export default function Hero() {
           {profile.intro}
         </motion.p>
         <motion.div className="hero-actions" variants={item}>
-          <Pressable className="btn btn-primary" href={profile.cv} download>
+          <Pressable className="btn btn-primary" href={profile.cv} download magnetic>
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14" />
             </svg>
             Download CV
           </Pressable>
-          <Pressable className="btn btn-ghost" href={profile.github} target="_blank" rel="noreferrer">
+          <Pressable className="btn btn-ghost" href={profile.github} target="_blank" rel="noreferrer" magnetic>
             GitHub
           </Pressable>
-          <Pressable className="btn btn-ghost" href={profile.linkedin} target="_blank" rel="noreferrer">
+          <Pressable className="btn btn-ghost" href={profile.linkedin} target="_blank" rel="noreferrer" magnetic>
             LinkedIn
           </Pressable>
-          <Pressable className="btn btn-ghost" href={`mailto:${profile.email}`}>
+          <Pressable className="btn btn-ghost" href={`mailto:${profile.email}`} magnetic>
             Email
           </Pressable>
         </motion.div>
