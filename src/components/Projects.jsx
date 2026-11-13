@@ -5,9 +5,9 @@ import { media } from '../media.js';
 import { Chevron, Placeholder, Reveal, SectionHeading, SPRING, SPRING_SNAPPY } from './motion.jsx';
 import ProjectDetail from './ProjectDetail.jsx';
 
-// The screenshot sits dimmed until the pointer is over it; then a circular
-// spotlight follows the cursor and lights it fully. A project video, if there
-// is one, plays muted while hovered (never with reduced motion).
+// The screenshot sits slightly dimmed and brightens while the card is hovered
+// or focused. A project video, if there is one, plays muted while hovered
+// (never with reduced motion).
 function ProjectMedia({ project, mediaRef, videoRef, hovered, focused, playing, setPlaying, reduce }) {
   const image = project.images?.[0];
   const src = media(image?.src);
@@ -37,7 +37,6 @@ function ProjectMedia({ project, mediaRef, videoRef, hovered, focused, playing, 
         />
       )}
       <motion.span className="media-shade" aria-hidden="true" initial={false} animate={{ opacity: hovered || focused ? 0 : 1 }} transition={SPRING_SNAPPY} />
-      <motion.span className="media-shade media-spot" aria-hidden="true" initial={false} animate={{ opacity: hovered ? 1 : 0 }} transition={SPRING_SNAPPY} />
     </div>
   );
 }
@@ -49,14 +48,6 @@ function ProjectCard({ project, index, onOpen, triggerRef }) {
   const [focused, setFocused] = useState(false);
   const [playing, setPlaying] = useState(false);
   const reduce = useReducedMotion();
-
-  const onPointerMove = (event) => {
-    const el = mediaRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    el.style.setProperty('--sx', `${event.clientX - rect.left}px`);
-    el.style.setProperty('--sy', `${event.clientY - rect.top}px`);
-  };
 
   const onPointerEnter = (event) => {
     if (event.pointerType !== 'mouse') return;
@@ -77,7 +68,6 @@ function ProjectCard({ project, index, onOpen, triggerRef }) {
         className="tile project"
         style={{ borderRadius: 28 }}
         transition={SPRING}
-        onPointerMove={onPointerMove}
         onPointerEnter={onPointerEnter}
         onPointerLeave={onPointerLeave}
         onFocus={() => setFocused(true)}

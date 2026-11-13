@@ -610,13 +610,6 @@ a:hover {
   pointer-events: none;
 }
 
-/* The same shade with a soft circular hole at the cursor. */
-.media-spot {
-  opacity: 0;
-  -webkit-mask-image: radial-gradient(circle 9rem at var(--sx, 50%) var(--sy, 50%), transparent 0%, transparent 35%, #000 100%);
-  mask-image: radial-gradient(circle 9rem at var(--sx, 50%) var(--sy, 50%), transparent 0%, transparent 35%, #000 100%);
-}
-
 /* No hover on touch screens, so show the screenshot at full brightness. */
 @media (hover: none) {
   .media-shade {
