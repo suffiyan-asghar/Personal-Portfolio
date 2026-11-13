@@ -539,24 +539,6 @@ a:hover {
   box-shadow: var(--edge);
 }
 
-.tile::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease-out;
-  background: radial-gradient(circle 22rem at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%);
-}
-
-.tile:hover::before {
-  opacity: 1;
-}
-
-.project::before {
-  background: radial-gradient(circle 24rem at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%);
-}
-
 .tile > * {
   position: relative;
 }

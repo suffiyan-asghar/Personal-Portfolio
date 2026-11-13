@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { projects } from '../data.js';
 import { media } from '../media.js';
-import { Chevron, Placeholder, Reveal, SectionHeading, SPRING, SPRING_SNAPPY, trackPointer } from './motion.jsx';
+import { Chevron, Placeholder, Reveal, SectionHeading, SPRING, SPRING_SNAPPY } from './motion.jsx';
 import ProjectDetail from './ProjectDetail.jsx';
 
 // The screenshot sits dimmed until the pointer is over it; then a circular
@@ -51,7 +51,6 @@ function ProjectCard({ project, index, onOpen, triggerRef }) {
   const reduce = useReducedMotion();
 
   const onPointerMove = (event) => {
-    trackPointer(event);
     const el = mediaRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();

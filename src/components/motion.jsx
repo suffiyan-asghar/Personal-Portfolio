@@ -97,7 +97,6 @@ export function Tile({ as = 'div', className = '', delay = 0, children, ...rest 
   return (
     <Tag
       className={`tile ${className}`}
-      onPointerMove={trackPointer}
       initial={{ opacity: 0, y: 32, scale: 0.98 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       whileHover={{ scale: 1.012 }}
@@ -109,13 +108,6 @@ export function Tile({ as = 'div', className = '', delay = 0, children, ...rest 
       {children}
     </Tag>
   );
-}
-
-export function trackPointer(event) {
-  const el = event.currentTarget;
-  const rect = el.getBoundingClientRect();
-  el.style.setProperty('--mx', `${event.clientX - rect.left}px`);
-  el.style.setProperty('--my', `${event.clientY - rect.top}px`);
 }
 
 // Shown where an image or logo file has not been added yet. In development it
